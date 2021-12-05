@@ -1,12 +1,16 @@
 HTML := html
 TEXT := text
 
-WORD_LIST := word-list.txt.gz
+WORD_LIST_1 := word-list-1.txt.gz
+WORD_LIST_2 := word-list-2.txt.gz
 
 EXTRACT := bin/extract.py
 
 # Base URL for the HTML-format dictionaries.
 BASE_URL := https://www.mso.anu.edu.au/~ralph/OPTED/v003/wb1913_
+
+# Github URL for wordlist-2
+WORD_LIST_2_URL := https://raw.githubusercontent.com/dwyl/english-words/master/words_alpha.txt
 
 # Text files containing valid words from the dictionary.
 TEXT_FILES :=																														\
@@ -21,10 +25,11 @@ TEXT_FILES :=																														\
 .PHONY: all clean rebuild prepare html-files text-files
 
 
-all: prepare |	\
+all: prepare       |\
 	html-files		\
 	text-files		\
-	$(WORD_LIST)
+	$(WORD_LIST_1)  \
+	$(WORD_LIST_2)
 
 
 clean:
@@ -56,5 +61,12 @@ $(TEXT)/%.txt: $(HTML)/%.html
 
 
 # Combine the word files into a single compressed word-list file.
-$(WORD_LIST): $(TEXT_FILES)
+$(WORD_LIST_1): $(TEXT_FILES)
 	@cat $^ | gzip -c > $@
+
+
+$(patsubst %.gz,%,$(WORD_LIST_2)):
+	@curl $(WORD_LIST_2_URL) -o $@
+
+$(WORD_LIST_2): $(patsubst %.gz,%,$(WORD_LIST_2))
+	@gzip $<
